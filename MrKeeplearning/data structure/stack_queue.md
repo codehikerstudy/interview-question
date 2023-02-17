@@ -175,6 +175,54 @@ def dump(self):
 
 # 4. 큐(Queue)
 
+<figure align = "center"><img src="https://user-images.githubusercontent.com/27791880/219057638-88a448ea-1551-41a9-8cdb-85ef904d4ec7.svg" width=400><figcaption><b>이미지 출처: Wikipedia - Queue</b></figcaption></figure>
+
+앞서 스택을 설명하는 한 단어를 선택한다고 하면 LIFO라고 답했던 것과 반대로, 큐를 대표할 수 있는 한 단어는 FIFO(First In First Out)라고 할 수 있다. 따라서, 먼저 넣은 데이터가 먼저 출력되는 선입선출의 형식을 따른다.
+
+큐의 동작은 크게 `enqueue`와 `dequeue` 2가지로 구분할 수 있다. Enqueue의 경우 큐의 가장 뒤(`Rear`)에 데이터를 추가하는 작업을 뜻하고, $O(1)$의 시간복잡도를 가진다. 그리고 Dequeue는 큐의 가장 앞(`Front`)에 있는 데이터를 삭제하는 작업으로 시간복잡도는 동일하게 $O(1)$이다.
+
+# 5. 큐 구현
+
+스택과 마찬가지로 큐도 파이썬에서 기본적으로 제공해주는 `pop()`과 `append()`를 활용해서 쉽게 구현할 수 있다.
+
+```python
+queue = []
+
+queue.append(1)
+queue.append(2)
+
+queue           # Output: [1, 2]
+queue.pop(0)    # Output: 1
+```
+
+큐의 구현 방식은 **Array-Based queue**와 **List-Based queue** 2가지로 구분할 수 있다.
+
+## 5.1. Array-Based queue
+
+1차원 배열을 사용한 순차 자료구조 방식의 큐는 포화상태가 아닐 때만 삽입 연산을 수행할 수 있도록 정의되어 있다. 따라서, 포화상태인지 검사하기 위해 큐의 rear가 배열의 마지막 인덱스인지 확인하는 작업이 필요하다.
+
+하지만 아래 그림과 같은 상태라면 문제가 발생한다.
+
+<figure align = "center"><img src="https://user-images.githubusercontent.com/27791880/219652917-4b84f045-ac14-4657-a0ae-2baed5eefbcf.png" width=400></figure>
+
+Dequeue를 진행한 상태이고, front의 데이터가 빠진 상태이므로 인덱스 0번, 1번, 2번에 자리가 있다. 그럼에도 rear가 배열의 마지막 위치에 있기 때문에 포화상태로 인식하고 삽입 연산을 수행하지 않는다.
+
+이러한 경우 큐의 빈자리를 활용하기 위해서 모든 원소를 앞으로 이동시켜야 하는데 이 작업을 위해서는 $O(n)$의 시간복잡도가 소요된다. 따라서 enqueue와 dequeue의 시간복잡도가 $O(1)$인 큐의 효율성을 떨어뜨린다.
+
+### 원형 큐
+
+<figure align = "center"><img src="https://user-images.githubusercontent.com/27791880/219665990-b107d9bc-efbf-42e8-8903-a1a8debff1b5.png" width=400></figure>
+
+이러한 문제를 해결하기 위해서 **원형 큐(Circular Queue)**를 사용하며, Array-Based queue는 원형 큐로 구현하는 것이 일반적이다. 원형 큐 또한 1차원 배열을 사용하지만 논리적으로 배열의 처음과 끝이 연결되어 있는 상태로 생각한다.
+
+초기 공백 상태에서 둘 front와 rear는 둘 다 인덱스 0를 가리키며 `front == rear`인 상태를 유지한다. Enqueue 시 rear는 한 칸 씩 이동하면서 데이터를 삽입하고, Dequeue를 수행할 때 front는 rear가 이동한 방향으로 이동하면서 데이터를 삭제한다.
+
+배열의 처음과 끝이 논리적으로 연결되어 있는 상태라고 가정하기 때문에 배열의 사이즈가 n일 때 인덱스 `n-1`에 도달한 뒤 새로운 데이터를 넣기 위해서는 인덱스 0로 돌아가야 한다.
+
+이러한 방식으로 동작하기 위해서 `modulo` 연산자를 사용해 새로운 데이터가 삽입되어야 하는 인덱스를 알려준다.
+
+예를 들어 전체 배열의 크기가 4이고 현재 인덱스가 배열의 끝인 3일 때 다음으로 삽입되어야 하는 위치는 인덱스 0이다. 현재 인덱스를 배열의 크기로 모듈로 연산을 진행하면 `3 % 4 == 0` 원형 큐의 동작 방식을 구현할 수 있다.
+
 # References
 
 * [Greg Kyte, CPA - twitter](https://twitter.com/gregkyte/status/1012088894886572032)
@@ -183,3 +231,4 @@ def dump(self):
 * [Wikipedia - 역폴란드 표기법](https://ko.wikipedia.org/wiki/%EC%97%AD%ED%8F%B4%EB%9E%80%EB%93%9C_%ED%91%9C%EA%B8%B0%EB%B2%95)
 * [노마드 코더 - 개발자라면 무조건 알아야 하는 자료구조! 5분컷.](https://youtu.be/Nk_dGScimz8)
 * [Do it! 자료구조와 함께 배우는 알고리즘 입문 : 파이썬 편](https://github.com/easysIT/doit_dsalgo_with_python)
+* [Introductuion and Array Implementation of Circular Queue](https://www.geeksforgeeks.org/introduction-and-array-implementation-of-circular-queue/)
