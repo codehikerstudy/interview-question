@@ -42,14 +42,13 @@ Interprocess communication의 방법으로 살펴본 message passing system과 s
 
 RPC는 네트워크를 통해 연결된 다른 시스템에 상주하는 프로세스와 서로 통신하기를 원할 때 활용된다.
 
-RPC는 네트워크에 연결되어 있는 시스템의 프로세스들 간에 [procedure calls](https://ko.wikipedia.org/wiki/%ED%95%A8%EC%88%98_(%EC%BB%B4%ED%93%A8%ED%84%B0_%EA%B3%BC%ED%95%99))을 추상화한 것으로 한 프로그램이 네트워크의 세부 사항을 이해하지 않고도 네트워크의 다른 컴퓨터에 있는 프로그램에서 서비스를 요청하는 데 사용할 수 있는 프로토콜이다.
+RPC는 네트워크에 연결되어 있는 시스템의 프로세스들 간에 [procedure calls](https://ko.wikipedia.org/wiki/%ED%95%A8%EC%88%98_(%EC%BB%B4%ED%93%A8%ED%84%B0_%EA%B3%BC%ED%95%99))을 추상화한 것으로 한 프로그램이 네트워크의 세부 사항을 이해하지 않고도 네트워크의 다른 컴퓨터에 있는 프로그램에서 서비스를 요청하는 데 사용할 수 있는 프로세스 간 통신 기술이다.
 
 RPC는 IPC를 기반으로 구현되었기 때문에 IPC 메커니즘과 많은 면에서 유사하다. 그러나, 프로세스가 별도의 시스템에서 실행되는 환경을 다루고 있기 때문에 RPC의 원격 서비스를 제공할 때 **메시지 기반 통신 방식**을 사용해야 한다. 따라서 IPC의 통신 방식 중 Message passing system을 사용해야 한다.
 
 RPC는 IPC의 Message passing system을 활용하게 되는데, IPC와 RPC는 무슨 차이가 있을까?
 
-IPC와 달리 RPC 통신으로 교환되는 메시지는 잘 구성되어 있기(well structured) 때문에 더 이상 단순한 데이터 패킷이 아니다. 이게 무슨 말이지?
-
+IPC와 달리 RPC 통신으로 교환되는 메시지는 잘 구성되어 있기(well structured) 때문에 더 이상 단순한 데이터 패킷이 아니다. 한편, IPC의 경우 메시지 전달 시스템으로 전달되는 메시지는 단지 데이터 패킷일 뿐이다.
 
 # Reference.
 
