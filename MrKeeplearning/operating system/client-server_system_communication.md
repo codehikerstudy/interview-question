@@ -40,7 +40,7 @@ Interprocess communication의 방법으로 살펴본 message passing system과 s
 <img src="https://user-images.githubusercontent.com/27791880/230550840-cfe2a488-b122-4ea2-856f-14371c96ad6c.png" width="600">
 </p>
 
-원격 프로시저 호출(RPC)은 클라이언트-서버 기반의 분산 컴퓨팅 환경 프로그램을 구성할 때 도움이 되는 기술이다. RPC는 기존의 로컬 프로시저 호출을 확장한 것을 기반으로 하여, 호출된 프로시저가 호출하는 프로시저(caller)와 같은 주소 공간 안에 있을 필요가 없다. 즉, 쉽게 설명하자면 client process가 네트워크로 연결된 원격의 다른 프로세스에 접근해서 프로시저를 호출하여 사용하는 방법이라고 이해할 수 있다.
+원격 프로시저 호출(RPC)은 클라이언트-서버 기반의 분산 컴퓨팅 환경 프로그램을 구성할 때 도움이 되는 기술이다. RPC는 기존의 로컬 프로시저 호출을 확장한 것을 기반으로 하여, 호출된 프로시저가 호출하는 프로시저(caller)와 같은 주소 공간 안에 있을 필요가 없다. 즉, 쉽게 설명하자면 한 프로세스가 다른 프로세스에 접근해서 해당 프로세스의 프로시저나 함수를 호출해서 마치 자신의 것처럼 사용할 수 있게 해주는 기술이라고 이해할 수 있다.
 
 RPC를 통해서 통신하려는 2개의 프로세스가 있을 때 이 둘은 같은 시스템 내에 있을 수도, 혹은 네트워크로 연결된 서로 다른 시스템 내에 있을 수도 있다. 대표적인 예시로 최근 많이 사용되는 **MSA(Micro Service Architecture)** 를 생각해 볼 수 있다. MSA에서 각각의 서비스들은 서로 다른 환경을 가질 수 있고, RPC는 이들 사이에서 서비스에 사용되는 언어에 영향을 받지 않고 프로시저 호출을 가능하게 한다.
 
@@ -88,6 +88,33 @@ RPC의 동작 방식을 살펴보기 전에 먼저 Stub이 무엇인지 알아�
 
 한편, 앞서 살펴본 client stub이나 server stub에서 처리가 불가능하거나 허용되지 않은 매개변수가 전달된 경우 RPC를 사용할 수 없는 상황이 생길 수 있다. 또한 네트워크를 통해 연결된 환경에서 네트워크가 갑자기 끊어졌을 때와 같이 네트워크 상황에 따라 프로시저 호출과 반환에 대한 시간이 보장되지 않는 단점도 있다.
 
+## 2.3. RPC의 이슈와 해결책
+
+RPC가 작동하는 과정 중에 직면하게 되는 몇가지 문제들이 있고 이 문제들을 해결하는 방법들에 대해서 알아본다.
+
+### Issue 1: 클라이언트와 서버 시스템에서의 데이터 표현 방식의 차이
+
+<p align="center">
+<img src="https://user-images.githubusercontent.com/27791880/230649489-93ae9f88-2751-4c68-95b8-1056309448d0.jpg">
+</p>
+
+위에서 stub에 대해 설명하면서도 잠깐 다루었는데, 예를 들어 32비트 정수가 있다고 했을 때 어떤 시스템에서는 [빅 엔디안 형식](http://www.tcpschool.com/c/c_refer_endian)을 따르는 경우도 있고 또 다른 시스템에서는 리틀 앤디안 형식을 따르고 있을 수도 있다. 
+
+컴퓨터가 저장하는 데이터는 대체로 32비트나 64비트로 구성되고 연속되는 바이트를 순서대로 저장하게 된다. 그런데 빅 엔디안 방식과 리틀 엔디안 방식은 바이트가 저장되는 순서가 다르기 때문에 서로 다른 바이트 저장 순서를 따르는 두 개의 프로세스가 네트워크를 통해서 통신할 경우 충돌이 발생할 수 밖에 없다.
+
+이러한 문제는 같은 머신이나 같은 시스템 내에서 IPC가 이루어질 때는 문제가 되지 않는다. 하지만 RPC에서는 네트워크로 연결된 서로 다른 시스템 간에 통신이 이루어지기 때문에 데이터 표현 방식의 차이가 통신에 문제를 야기할 수 있다.
+
+### Issue 1 해결책
+
+이때 사용되는 것이 XDR이라고 불리는 외부 데이터 표현 방식(External Data Representation)이다. XDR은 다른 기종 간의 컴퓨터와 응용 소프트웨어 사이에서 자료를 교환할 때 개방 환경을 만들어 주기 위한 데이터 표현 방식이다. 데이터 표현 방식의 차이 때문에 A 컴퓨터에서 사용하던 데이터가 B 컴퓨터에서는 사용할 수 없는 경우가 발생할 수 있다. 따라서 A 컴퓨터에서 보낸 데이터를 B 컴퓨터에서도 사용할 수 있도록 미리 A 컴퓨터에서 XDR형식으로 변환한 뒤 B 컴퓨터로 보낸다. B 컴퓨터에서는 A로부터 수신한 XDR 형식의 데이터를 자신의 시스템에서 사용하는 데이터 표현 방식으로 변환한 뒤에 해당 데이터를 정상적으로 사용할 수 있게 된다.
+
+이러한 기능은 앞서 살펴본 **스텁**에서 담당하고 있다. 클라이언트 측에서 보낸 데이터를 스텁에서 marshalling해서 XDR형식으로 변환하고 서버 측에서는 이 XDR형식의 데이터를 unmarshalling해서 서버 측에서 사용할 수 있도록 만들어준다.
+
+
+
+
+
+
 # Reference.
 
 * [tutorialspoint: Operating Systems Client/Server Communication](https://www.tutorialspoint.com/operating-systems-client-server-communication)
@@ -96,3 +123,5 @@ RPC의 동작 방식을 살펴보기 전에 먼저 Stub이 무엇인지 알아�
 * [Neso Academy: Processes | Chapter-3 | Operating](https://youtube.com/playlist?list=PLBlnK6fEyqRgKl0MbI6kbI5ffNt7BF8Fn)
 * [Hackyboiz: RPC](https://hackyboiz.github.io/2021/10/22/poosic/rpc/)
 * [위키백과: 메소드 스텁](https://ko.wikipedia.org/wiki/%EB%A9%94%EC%86%8C%EB%93%9C_%EC%8A%A4%ED%85%81)
+* [정보통신용어사전: 외부 데이터 표현 방식](http://word.tta.or.kr/dictionary/dictionaryView.do?subject=%EC%99%B8%EB%B6%80+%EB%8D%B0%EC%9D%B4%ED%84%B0+%ED%91%9C%ED%98%84+%EB%B0%A9%EC%8B%9D)
+* [Rensselaer Polytechnic Institute - network programming lecture slide](https://www.cs.rpi.edu/courses/fall96/netprog/lectures/slds/xdr/sld001.htm)
