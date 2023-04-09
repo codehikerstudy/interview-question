@@ -37,9 +37,19 @@ Message Passing System에서 프로세스 간 통신은 커널에 `send()`와 `r
 
 ## Zero Capacity(무용량)
 
+Buffer queue를 무용량으로 구현할 경우 큐의 최대 길이는 0이다. 즉, 링크에 버퍼가 없는 상태이다. 따라서 링크에는 대기 중인 메시지가 있을 수 없고, sender는 receiver가 준비되어 메시지를 직접 수신할 수 있을 때까지 기다려야 한다.
+
+이것은 앞서 다룬 **Blocking send**와 유사한 상태이다. 만약 첫 번째 메시지가 보내진 상태에서 sender process가 block된 상태가 아니라면 두 번째 메시지를 보낼 것이다. 그리고 receiver process가 아직 첫 번째 메시지를 수신하지 못한 상태일 경우 두 번째 메시지는 queue에서 기다려야 한다. 하지만 zero capacity로 구현된 버퍼에서는 어떠한 것도 대기할 수 없다. 따라서, zero capacity로 구현된 버퍼에서 sender는 receiver가 앞서 보낸 메시지를 수신하기 전까지 block되어야 한다.
+
+이러한 특징들 때문에 zero capacity는 **no buffering** 또는 **automatic buffering** 이라고 불리기도 한다.
+
 ## Bounded Capacity(유한용량)
 
+유한 용량으로 구현된 Buffer queue는 최대 n개의 메시지가 담겨 있을 수 있다. 새 메시지를 보낼 때 큐가 가득 찬 상태가 아니라면 메시지가 큐에 들어가고 sender process는 기다림 없이 작업을 이어갈 수 있다. 하지만 버퍼의 용량은 유한한 상태이기 때문에 만약 링크의 buffer queue가 가득 찼다면 sender process는 기다려야 한다(block).
+
 ## Unbounded Capacity(무한용량)
+
+Unbounded Capacity의 buffer queue는 무한한 길이의 버퍼를 가지고 있기 때문에 sender process가 보낸 메시지는 얼마든지 buffer queue에서 대기할 수 있다. 따라서 sender process는 block될 일이 없다.
 
 # Reference.
 
